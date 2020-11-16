@@ -1,94 +1,112 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View,Image,TextInput,TouchableOpacity,textb} from 'react-native';
-import {createAppContainer} from 'react-navigation'
-import {createBottomTabNavigator} from 'react-navigation-tabs'
-import {Header} from 'react-native-elements'
-import db from '../config'
+import {Text,View,TextInput,StyleSheet,TouchableOpacity,Alert, KeyboardAvoidingView} from 'react-native';
+import db from '../config';
+import firebase from 'firebase';
 
-export default class WriteStoryScreen extends React.Component{
+
+export default class WriteScreen extends React.Component{
     constructor(){
-        super()
+        super();
         this.state={
-            storyTitle:"",
-            authorName:"",
-            Story:""
+            writtenStory: '',
+            writtenTitle:'',
+            writtenAuthor:'',
         }
-    }
-    submitStory=()=>{
-      var storytitle=this.state.storyTitle
-      var authorname=this.state.authorName
-      var story=this.state.Story
+        }
 
-var newStory = db.ref('Stories'+'/'+storytitle)
-newStory.update({
-  Title:storytitle,
-  AuthorName:authorname,
-  TheStory:story
-
-})
-
-    }
-    render(){
-      return (
-        <View style={styles.container}>
-             <Header backgroundColor={'cyan'}
-      centerComponent={{text:'Story Hub',style:{color:'#000000',fontSize:25,fontWeight:'bold',alignSelf:'center'}}}
-    
-      />
-
-          <TextInput placeholder="Apurva Title" onChangeText={(text)=>{this.setState({storyTitle:text})}} value={this.state.storyTitle} style={styles.inputBox}/>
-
-          <TextInput placeholder="Apurva Name"  onChangeText={(text)=>{this.setState({authorName:text})}} value={this.state.authorName}  style={styles.inputBox}/>
-
-          <TextInput placeholder="Write your Apurva here"  onChangeText={(text)=>{this.setState({Story:text})}} value={this.state.Story} style={styles.StoryBox}/>
-
-          <TouchableOpacity style={styles.goButton} onPress={()=>{this.submitStory()}}><Text style={styles.buttonText}>SUBMIT</Text></TouchableOpacity>
-        </View>
-      );
-    }
-    
-  }
-  const styles = StyleSheet.create({
- 
-    inputBox:{
-      marginTop:50,
-      width:300,
-      alignSelf:'center',
-      height:50,
-      textAlign:'center',
-      borderWidth:4,
-   
-    },
-    StoryBox:{
-        marginTop:50,
-        width:300,
-        alignSelf:'center',
-        height:200,
-        textAlign:'center',
-        borderWidth:4,
-     
-      },
-     goButton:{
-      width:'30%',
-      height:50,
-      alignSelf:'center',
-      padding:10,
-      margin:10,
-      marginTop:20,
-      alignItems:'center',
-      backgroundColor:'yellow',
-      
-     },
-     buttonText:{
-        textAlign:'center',
-           fontSize:20,
-           fontWeight:'bold'
-          },
-          container: {
-            flex: 1,
-            backgroundColor: '#fff',
-            alignItems: 'center',
-            justifyContent: 'center',
+        submitStory = async ()=>{
+            db.collection("WrittenStory").doc("aly6WkmL8TrtCmafLVH2").set({
+              'Story' : this.state.writtenStory,
+              'date'   : firebase.firestore.Timestamp.now().toDate(),
+              'Author': this.state.writtenAuthor,
+              'Title':this.state.writtenTitle
+            })     
+            this.setState({
+            writtenStory:'',
+            writtenTitle:'',
+            writtenAuthor:'',
+            })
+            alert("Succesfully updated the story!");
           }
-        })
+
+
+    render(){
+        return(
+          <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+            <TextInput
+                editable
+                maxLength={70}
+                multiline
+                onChangeText = {(text)=>{
+                    this.setState({writtenTitle:text});
+                  }}
+                numberOfLines={4}
+                value={this.state.writtenTitle}
+                selectionColor = '#0000f0'
+                placeholder="Title"
+                style={styles.inputBox2}
+            />
+            <TextInput
+                editable
+                maxLength={70}
+                multiline
+                onChangeText = {(text)=>{
+                    this.setState({writtenAuthor:text});
+                  }}
+                numberOfLines={4}
+                value={this.state.writtenAuthor}
+                selectionColor = '#0000f0'
+                placeholder="Author Name"
+                style={styles.inputBox2}
+            />
+            <TextInput
+                editable
+                maxLength={200}
+                multiline
+                onChangeText = {(text)=>{
+                    this.setState({writtenStory:text});
+                  }}
+                value={this.state.writtenStory}
+                numberOfLines={4}
+                selectionColor = '#0000f0'
+                placeholder="Story"
+                style={styles.inputBox}
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={()=>{
+                this.submitStory();
+              }}>
+                <Text style={styles.letButton}>Submit</Text>
+                </TouchableOpacity>
+            <Text>Write your Story</Text>
+            </KeyboardAvoidingView>
+        );
+    }
+}
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+      },
+    inputBox:{
+        width:"90%",
+        height:"60%",
+        borderWidth: 2,
+      },
+      inputBox2:{
+        width:"90%",
+        height:40,
+        borderWidth: 2,
+      },
+    submitButton:{
+        width:"50%",
+        height:55,
+        margin:10,
+        padding:10,
+        alignItems:'center',
+    },
+    letButton:{
+        textAlign:'center',
+        fontSize:25,
+        fontWeight:'bold',
+    }
+})
